@@ -16,6 +16,7 @@ npx cap sync
 * [`getBatteryInfo()`](#getbatteryinfo)
 * [`addBatteryListener(...)`](#addbatterylistener)
 * [`removeBatteryListener(...)`](#removebatterylistener)
+* [`addListener('batteryChanged', ...)`](#addlistenerbatterychanged-)
 * [Interfaces](#interfaces)
 
 </docgen-index>
@@ -68,6 +69,24 @@ Remove battery listener
 --------------------
 
 
+### addListener('batteryChanged', ...)
+
+```typescript
+addListener(eventName: 'batteryChanged', listenerFunc: (data: BatteryInfo) => void) => Promise<PluginListenerHandle>
+```
+
+Add a listener for battery events
+
+| Param              | Type                                                                   |
+| ------------------ | ---------------------------------------------------------------------- |
+| **`eventName`**    | <code>'batteryChanged'</code>                                          |
+| **`listenerFunc`** | <code>(data: <a href="#batteryinfo">BatteryInfo</a>) =&gt; void</code> |
+
+**Returns:** <code>Promise&lt;<a href="#pluginlistenerhandle">PluginListenerHandle</a>&gt;</code>
+
+--------------------
+
+
 ### Interfaces
 
 
@@ -79,5 +98,12 @@ Remove battery listener
 | **`isCharging`**   | <code>boolean</code>                                                              | Whether the device is currently charging              |
 | **`isLowBattery`** | <code>boolean</code>                                                              | Whether the battery level is low (typically &lt; 20%) |
 | **`status`**       | <code>'charging' \| 'discharging' \| 'full' \| 'not_charging' \| 'unknown'</code> | Battery status text                                   |
+
+
+#### PluginListenerHandle
+
+| Prop         | Type                                      |
+| ------------ | ----------------------------------------- |
+| **`remove`** | <code>() =&gt; Promise&lt;void&gt;</code> |
 
 </docgen-api>

@@ -1,4 +1,4 @@
-import { registerPlugin, Capacitor } from '@capacitor/core';
+import { registerPlugin, Capacitor, PluginListenerHandle } from '@capacitor/core';
 
 import type { ElkeBatteryPlugin, BatteryInfo } from './definitions';
 
@@ -6,10 +6,10 @@ const ElkeBatteryNative = registerPlugin<ElkeBatteryPlugin>('ElkeBattery', {
   web: () => import('./web').then((m) => new m.ElkeBatteryWeb()),
 });
 
-// Enhanced wrapper to handle native events properly
+// Simplified wrapper to handle native events properly
 class ElkeBatteryWrapper {
   private listeners: Map<string, (info: BatteryInfo) => void> = new Map();
-  private nativeListenerSetup = false;
+  private nativeListenerHandle: PluginListenerHandle | null = null;
 
   async getBatteryInfo(): Promise<BatteryInfo> {
     return ElkeBatteryNative.getBatteryInfo();
@@ -21,22 +21,22 @@ class ElkeBatteryWrapper {
 
     // For native platforms, use Capacitor's event system
     if (Capacitor.isNativePlatform()) {
-      if (!this.nativeListenerSetup) {
+      if (!this.nativeListenerHandle) {
         // Listen for native events using Capacitor's event system
-        (ElkeBatteryNative as any).addListener('batteryChanged', (batteryInfo: BatteryInfo) => {
+        this.nativeListenerHandle = await ElkeBatteryNative.addListener('batteryChanged', (data: BatteryInfo) => {
+          console.log('Native battery event received:', data);
           // Notify all registered listeners
-          this.listeners.forEach(cb => cb(batteryInfo));
+          this.listeners.forEach(cb => cb(data));
         });
-        this.nativeListenerSetup = true;
+        console.log('Capacitor event listener setup complete');
       }
       
-      // Also call the native method to ensure the receiver is registered
+      // Call the native method to start the battery receiver
       try {
-        const result = await ElkeBatteryNative.addBatteryListener(() => {});
-        // The native method returns a JSObject with the callbackId, but we use our own
-        console.log('Native listener registered:', result?.value || result);
+        await ElkeBatteryNative.addBatteryListener(() => {});
+        console.log('Native battery receiver started');
       } catch (error) {
-        console.warn('Native battery listener setup warning:', error);
+        console.error('Native battery listener setup error:', error);
       }
     } else {
       // For web, use the original implementation
@@ -54,8 +54,19 @@ class ElkeBatteryWrapper {
       return ElkeBatteryNative.removeBatteryListener(callbackId);
     }
 
-    // For native, if no more listeners, we could clean up but we'll keep it simple
-    return ElkeBatteryNative.removeBatteryListener(callbackId);
+    // For native, if no more listeners, clean up the native listener
+    if (this.listeners.size === 0) {
+      try {
+        await ElkeBatteryNative.removeBatteryListener(callbackId);
+        if (this.nativeListenerHandle) {
+          await this.nativeListenerHandle.remove();
+          this.nativeListenerHandle = null;
+        }
+        console.log('Native listener cleaned up');
+      } catch (error) {
+        console.error('Error cleaning up native listener:', error);
+      }
+    }
   }
 
   private generateCallbackId(): string {

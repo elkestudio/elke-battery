@@ -91,25 +91,58 @@ public class ElkeBatteryPlugin extends Plugin {
             batteryReceiver = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
+                    String action = intent.getAction();
+                    android.util.Log.d("ElkeBattery", "Battery event received: " + action);
+                    
                     JSObject batteryInfo = getBatteryStatus();
+                    android.util.Log.d("ElkeBattery", "Sending battery update: " + batteryInfo.toString());
+                    
+                    // Use the correct event name that matches the TypeScript wrapper
                     notifyListeners("batteryChanged", batteryInfo);
                 }
             };
         }
 
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_BATTERY_CHANGED);
-        filter.addAction(Intent.ACTION_POWER_CONNECTED);
-        filter.addAction(Intent.ACTION_POWER_DISCONNECTED);
+        // Only register if not already listening
+        if (!isListening) {
+            IntentFilter filter = new IntentFilter();
+            // Core battery events
+            filter.addAction(Intent.ACTION_BATTERY_CHANGED);
+            filter.addAction(Intent.ACTION_POWER_CONNECTED);
+            filter.addAction(Intent.ACTION_POWER_DISCONNECTED);
+            // Additional events for better live updates
+            filter.addAction(Intent.ACTION_BATTERY_LOW);
+            filter.addAction(Intent.ACTION_BATTERY_OKAY);
+            filter.addAction("android.intent.action.BATTERY_CHANGED");
 
-        getContext().registerReceiver(batteryReceiver, filter);
-        isListening = true;
+            try {
+                getContext().registerReceiver(batteryReceiver, filter);
+                isListening = true;
+                android.util.Log.d("ElkeBattery", "Battery receiver registered successfully with enhanced filters");
+                
+                // Send initial battery status immediately
+                JSObject initialStatus = getBatteryStatus();
+                notifyListeners("batteryChanged", initialStatus);
+                android.util.Log.d("ElkeBattery", "Initial battery status sent: " + initialStatus.toString());
+                
+            } catch (Exception e) {
+                // Handle any registration errors
+                android.util.Log.e("ElkeBattery", "Error registering battery receiver", e);
+                e.printStackTrace();
+            }
+        }
     }
 
     private void stopBatteryListener() {
         if (batteryReceiver != null && isListening) {
-            getContext().unregisterReceiver(batteryReceiver);
-            isListening = false;
+            try {
+                getContext().unregisterReceiver(batteryReceiver);
+                isListening = false;
+                android.util.Log.d("ElkeBattery", "Battery receiver unregistered successfully");
+            } catch (Exception e) {
+                android.util.Log.e("ElkeBattery", "Error unregistering battery receiver", e);
+                e.printStackTrace();
+            }
         }
     }
 

@@ -1,3 +1,5 @@
+import { PluginListenerHandle } from '@capacitor/core';
+
 export interface ElkeBatteryPlugin {
   /**
    * Get current battery information
@@ -13,6 +15,11 @@ export interface ElkeBatteryPlugin {
    * Remove battery listener
    */
   removeBatteryListener(callbackId: string): Promise<void>;
+
+  /**
+   * Add a listener for battery events
+   */
+  addListener(eventName: 'batteryChanged', listenerFunc: (data: BatteryInfo) => void): Promise<PluginListenerHandle>;
 }
 
 export interface BatteryInfo {

@@ -1,6 +1,6 @@
 {
   "name": "elke-battery",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Battery and charging status",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",

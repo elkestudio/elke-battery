@@ -53,7 +53,7 @@ public class ElkeBatteryPlugin: CAPPlugin, CAPBridgedPlugin {
         
         let callbackId = "battery_listener_\(Date().timeIntervalSince1970)"
         call.resolve([
-            "callbackId": callbackId
+            "value": callbackId  // Changed from "callbackId" to "value" to match Android
         ])
     }
     
@@ -63,36 +63,52 @@ public class ElkeBatteryPlugin: CAPPlugin, CAPBridgedPlugin {
     }
     
     private func startBatteryListener() {
+        // Enable battery monitoring first
         UIDevice.current.isBatteryMonitoringEnabled = true
+        print("iOS: Battery monitoring enabled")
         
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(batteryLevelDidChange),
-            name: UIDevice.batteryLevelDidChangeNotification,
-            object: nil
-        )
-        
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(batteryStateDidChange),
-            name: UIDevice.batteryStateDidChangeNotification,
-            object: nil
-        )
-        
-        isListening = true
+        // Only add observers if not already listening
+        if !isListening {
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(batteryLevelDidChange),
+                name: UIDevice.batteryLevelDidChangeNotification,
+                object: nil
+            )
+            
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(batteryStateDidChange),
+                name: UIDevice.batteryStateDidChangeNotification,
+                object: nil
+            )
+            
+            isListening = true
+            print("iOS: Battery listeners added successfully")
+            
+            // Send initial battery status immediately
+            sendBatteryUpdate()
+        }
     }
     
     private func stopBatteryListener() {
-        NotificationCenter.default.removeObserver(self, name: UIDevice.batteryLevelDidChangeNotification, object: nil)
-        NotificationCenter.default.removeObserver(self, name: UIDevice.batteryStateDidChangeNotification, object: nil)
-        isListening = false
+        if isListening {
+            NotificationCenter.default.removeObserver(self, name: UIDevice.batteryLevelDidChangeNotification, object: nil)
+            NotificationCenter.default.removeObserver(self, name: UIDevice.batteryStateDidChangeNotification, object: nil)
+            isListening = false
+            
+            // Optionally disable battery monitoring when no longer needed
+            // UIDevice.current.isBatteryMonitoringEnabled = false
+        }
     }
     
     @objc private func batteryLevelDidChange() {
+        print("iOS: Battery level changed")
         sendBatteryUpdate()
     }
     
     @objc private func batteryStateDidChange() {
+        print("iOS: Battery state changed")
         sendBatteryUpdate()
     }
     
@@ -116,12 +132,15 @@ public class ElkeBatteryPlugin: CAPPlugin, CAPBridgedPlugin {
             status = "unknown"
         }
         
-        notifyListeners("batteryChanged", data: [
+        let batteryData = [
             "level": batteryLevel,
             "isCharging": isCharging,
             "isLowBattery": isLowBattery,
             "status": status
-        ])
+        ] as [String : Any]
+        
+        print("iOS: Sending battery update: \(batteryData)")
+        notifyListeners("batteryChanged", data: batteryData)
     }
     
     deinit {
