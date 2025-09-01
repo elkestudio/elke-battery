@@ -1,0 +1,139 @@
+{
+  "api": {
+    "name": "ElkeBatteryPlugin",
+    "slug": "elkebatteryplugin",
+    "docs": "",
+    "tags": [],
+    "methods": [
+      {
+        "name": "getBatteryInfo",
+        "signature": "() => Promise<BatteryInfo>",
+        "parameters": [],
+        "returns": "Promise<BatteryInfo>",
+        "tags": [],
+        "docs": "Get current battery information",
+        "complexTypes": [
+          "BatteryInfo"
+        ],
+        "slug": "getbatteryinfo"
+      },
+      {
+        "name": "addBatteryListener",
+        "signature": "(callback: (info: BatteryInfo) => void) => Promise<{ value: string; }>",
+        "parameters": [
+          {
+            "name": "callback",
+            "docs": "",
+            "type": "(info: BatteryInfo) => void"
+          }
+        ],
+        "returns": "Promise<{ value: string; }>",
+        "tags": [],
+        "docs": "Listen for battery changes",
+        "complexTypes": [
+          "BatteryInfo"
+        ],
+        "slug": "addbatterylistener"
+      },
+      {
+        "name": "removeBatteryListener",
+        "signature": "(callbackId: string) => Promise<void>",
+        "parameters": [
+          {
+            "name": "callbackId",
+            "docs": "",
+            "type": "string"
+          }
+        ],
+        "returns": "Promise<void>",
+        "tags": [],
+        "docs": "Remove battery listener",
+        "complexTypes": [],
+        "slug": "removebatterylistener"
+      },
+      {
+        "name": "addListener",
+        "signature": "(eventName: 'batteryChanged', listenerFunc: (data: BatteryInfo) => void) => Promise<PluginListenerHandle>",
+        "parameters": [
+          {
+            "name": "eventName",
+            "docs": "",
+            "type": "'batteryChanged'"
+          },
+          {
+            "name": "listenerFunc",
+            "docs": "",
+            "type": "(data: BatteryInfo) => void"
+          }
+        ],
+        "returns": "Promise<PluginListenerHandle>",
+        "tags": [],
+        "docs": "Add a listener for battery events",
+        "complexTypes": [
+          "PluginListenerHandle",
+          "BatteryInfo"
+        ],
+        "slug": "addlistenerbatterychanged-"
+      }
+    ],
+    "properties": []
+  },
+  "interfaces": [
+    {
+      "name": "BatteryInfo",
+      "slug": "batteryinfo",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "level",
+          "tags": [],
+          "docs": "Battery level as a percentage (0-100)",
+          "complexTypes": [],
+          "type": "number"
+        },
+        {
+          "name": "isCharging",
+          "tags": [],
+          "docs": "Whether the device is currently charging",
+          "complexTypes": [],
+          "type": "boolean"
+        },
+        {
+          "name": "isLowBattery",
+          "tags": [],
+          "docs": "Whether the battery level is low (typically < 20%)",
+          "complexTypes": [],
+          "type": "boolean"
+        },
+        {
+          "name": "status",
+          "tags": [],
+          "docs": "Battery status text",
+          "complexTypes": [],
+          "type": "'charging' | 'discharging' | 'full' | 'not_charging' | 'unknown'"
+        }
+      ]
+    },
+    {
+      "name": "PluginListenerHandle",
+      "slug": "pluginlistenerhandle",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "remove",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "() => Promise<void>"
+        }
+      ]
+    }
+  ],
+  "enums": [],
+  "typeAliases": [],
+  "pluginConfigs": []
+}
